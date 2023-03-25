@@ -1,5 +1,6 @@
 # ranking-semantics-Abstract-Argumentation
-###existing semantics in this project :
+existing semantics in this project :
+
 1 - Categoriser-based ranking semantics
 
 2 - Discussion-based semantics
