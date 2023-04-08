@@ -1,4 +1,6 @@
 import networkx as nx
+from discussion_based import discussion_based
+from tuple_based import tuple_based
 G = nx.DiGraph()
 
 with open('input.txt', 'r') as file:
@@ -14,4 +16,5 @@ with open('input.txt', 'r') as file:
             content = line.split()
             G.add_edge(int(content[0]) , int(content[1]))
 
-print(G)
+print(discussion_based(G,5))
+print(tuple_based(G))
