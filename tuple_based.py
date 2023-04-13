@@ -71,7 +71,7 @@ def merge_sort(arr):
 
 def tuple_based(G) :
   if has_cycle(G):
-    print("graph has cycles can't provide a ranking")
+    return("graph has cycles can't provide a ranking")
   else:
     n = G.number_of_nodes()
     nodes = list(G.nodes())
