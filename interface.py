@@ -2,6 +2,8 @@ import tkinter
 from tkinter import filedialog
 import tkinter.scrolledtext
 import networkx as nx
+from Alpha_Burden_based_semantic import alpha_burden_based
+from Burden_based_semantic import burden_based
 from discussion_based import discussion_based
 from tuple_based import tuple_based
 G = nx.DiGraph() 
@@ -81,8 +83,14 @@ def on_select(event):
     message = message[2:] + ' based : ' 
     if semantic == '2':
         message += str(discussion_based(G ,10))
+    elif semantic == '3':
+        message += str(burden_based(G ,10))
+    elif semantic == '4':
+        message += str(alpha_burden_based(G ,1))
     elif semantic == '5':
         message += str(tuple_based(G))
+    elif semantic == '6':
+        message = message.replace('based ','')
     output_area.config(state='normal')
     output_area.insert('end', message+'\n')
     output_area.yview('end')
