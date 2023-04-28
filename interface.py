@@ -61,9 +61,22 @@ def save_graph():
                 nb_nodes = int(content[-1])
                 nodes = [i+1 for i in range(nb_nodes)]
                 G.add_nodes_from(nodes)
+            
+    # Read the file if the user is using another form for the input            
             else :
                 content = line.split()
                 G.add_edge(int(content[0]) , int(content[1]))
+               
+        else: 
+            if line.startswith('arg(') and line.endswith(')'):
+               content = line.split()
+               node_value= int(content[4:-2])
+               G.add_node(node_value)
+            elif line.startswith('att(') and line.endswith(')'):
+                content = line[4:-2].split(',')
+                arg1_value = int(content[0].strip())
+                arg2_value = int(content[1].strip())
+                G.add_edget(arg1_value,arg2_value)
 
 save_button = tkinter.Button(win, text="save graph", command=save_graph)
 save_button.config(font=("Arial", 12))
