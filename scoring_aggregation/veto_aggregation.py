@@ -9,6 +9,6 @@ def veto_aggregation(ranking_list):
                 scores[item_idx] += 1
                 break
 
-    sorted_items = [x+1 for _, x in sorted(zip(scores, range(n_items)), reverse=True)]
+    sorted_items = [x+1 for _, x in sorted(zip(scores, range(n_items)), reverse=False)]
 
     return sorted_items
