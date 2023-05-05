@@ -27,9 +27,16 @@ def zero_sum(G):
 
 # Define the Matt and Toni ranking 
 
-def mt_ranking(G, values):
+def mt_ranking(G):
+    values = zero_sum(G)
     ranking = sorted(G.nodes(), key=lambda x: values[x], reverse=True)
-    return {arg: rank for rank, arg in enumerate(ranking)}
+    my_dict = {arg: rank for rank, arg in enumerate(ranking)}
+    sorted_dict = sorted(my_dict.items(), key=lambda x: x[1])
+
+    # Create a list of items based on the sorted order of ranks
+    new_list = [item[0] for item in sorted_dict]
+
+    return(new_list)
 
 
 # values = zero_sum(G)
