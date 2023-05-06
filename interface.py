@@ -64,6 +64,7 @@ def reset():
     outputs_area.delete('1.0', 'end')
     outputs_area.config(state='disabled')
     rankings.clear()
+    semantics.clear()
 reset_button = tkinter.Button(win, text="reset", command=reset)
 reset_button.config(font=("Arial", 12))
 reset_button.place(x=750, y=4)
@@ -256,8 +257,21 @@ def aggregate(event):
         message += str("kemeny_aggregation(rankings)")
     outputs_area.config(state='normal')
     message += str(rank)
-    consensus = closest_ranking(rank, rankings)
-    outputs_area.insert('end', message+ ' --> ' + str(consensus)+'\n')
+    i_consensus = closest_ranking(rank, rankings)
+    consensus = semantics[i_consensus]
+    if (consensus == '1'):
+        consensus = "categorizer"
+    elif (consensus == '2'):
+        consensus = "discussion"
+    elif (consensus == '3') :
+        consensus= "burden"
+    elif (consensus == '4') :
+        consensus= "alpha_burden"
+    elif (consensus == '5') :
+        consensus= "tuple"
+    elif (consensus == '6') :
+        consensus = "M&T"
+    outputs_area.insert('end', message+ ' --> ' + consensus+'\n')
     outputs_area.yview('end')
     outputs_area.config(state='disabled')
 aggregation_listbox.bind("<<ListboxSelect>>", aggregate)
