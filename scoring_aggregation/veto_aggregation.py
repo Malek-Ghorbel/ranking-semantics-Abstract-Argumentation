@@ -12,3 +12,44 @@ def veto_aggregation(ranking_list):
     sorted_items = [x+1 for _, x in sorted(zip(scores, range(n_items)), reverse=False)]
 
     return sorted_items
+
+
+
+import numpy as np
+
+def median_ranking(rankings):
+    # Compute the median rank of each item across all expert rankings
+    median_ranks = np.median(rankings, axis=0)
+    
+    # Rank the items based on their median rank
+    ranked_items = np.sort(median_ranks)
+    return ranked_items
+
+import numpy as np
+from scipy.optimize import minimize
+
+def minimax_method(rankis) :
+    rankings = np.array(rankis)
+    veto_threshold = 1
+    n_experts, n_items = rankings.shape
+    
+    # Count the number of vetoes for each item
+    veto_counts = np.zeros(n_items)
+    for i in range(n_items):
+        veto_counts[i] = np.sum(rankings[:, i] == -1)
+        
+    # Identify the items that have been vetoed by more than the threshold number of experts
+    vetoed_items = np.where(veto_counts > veto_threshold)[0]
+    
+    # Remove the vetoed items from consideration
+    rankings[:, vetoed_items] = -1
+    
+    # Compute the scores for each item based on its rank in each expert's ranking
+    scores = np.zeros(n_items)
+    for i in range(n_items):
+        scores[i] = np.sum(rankings[:, i] != -1) * np.mean(rankings[:, i][rankings[:, i] != -1])
+    
+    # Rank the items based on their scores
+    ranked_items = np.argsort(-scores)
+    
+    return ranked_items

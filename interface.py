@@ -12,7 +12,7 @@ from scoring_aggregation.borda_count_aggregation import borda_count_aggregation
 from scoring_aggregation.consensus import closest_ranking
 from scoring_aggregation.plurality_aggregation import plurality_aggregation
 from scoring_aggregation.top_k_aggregation import topk_aggregation
-from scoring_aggregation.veto_aggregation import veto_aggregation
+from scoring_aggregation.veto_aggregation import  median_ranking , minimax_method
 from tuple_based import tuple_based
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -250,7 +250,7 @@ def aggregate(event):
         k = int(k_entry.get())
         rank= topk_aggregation(ranking_list=rankings , k=k)
     elif (index == '4') :
-        rank= veto_aggregation(rankings)
+        rank= minimax_method(rankings)
     elif (index == '5') :
         rank= biased_scoring_aggregation(rankings)
     elif (index == '6') :

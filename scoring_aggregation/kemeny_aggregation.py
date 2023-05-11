@@ -82,10 +82,48 @@ def kemeny_young(rankings):
     
     return [x for x in min_permutation]
 
+import numpy as np
+from itertools import permutations
+from scipy.optimize import minimize
+
+def kemeny_young_method(rankis):
+    rankings = np.array(rankis)
+    n_experts, n_items = rankings.shape
+    
+    # Define the objective function to minimize
+    def objective(x):
+        rank_diffs = np.abs(rankings.dot(x)[:, np.newaxis] - rankings.dot(x)[np.newaxis, :])
+        return np.sum(rank_diffs)
+    
+    # Define the constraint that the weights must sum to 1
+    cons = [{'type': 'eq', 'fun': lambda x: np.sum(x) - 1}]
+    
+    # Define the initial guess for the weights
+    x0 = np.ones(n_experts) / n_experts
+    
+    # Solve the optimization problem to find the weights
+    res = minimize(objective, x0, constraints=cons)
+    
+    # Combine the expert rankings using the weights
+    weighted_rankings = rankings.dot(res.x)
+    
+    # Compute all possible rankings of the items
+    all_rankings = permutations(range(n_items))
+    
+    # Find the ranking that minimizes the sum of pairwise differences with the combined ranking
+    min_diff = np.inf
+    for ranking in all_rankings:
+        rank_diff = np.sum(np.abs(ranking - np.argsort(weighted_rankings)))
+        if rank_diff < min_diff:
+            min_diff = rank_diff
+            ranked_items = ranking
+            
+    return ranked_items
+
 
 
 input_rankings = [[1, 6, 10, 3, 2, 4, 8, 5, 7, 9], [1, 6, 10, 3, 2, 4, 8, 5, 7, 9], [1, 6, 10, 5, 7, 3, 2, 4, 8, 9]]
-kemeny_aggregation = kemeny_young(input_rankings)
+kemeny_aggregation = kemeny_young_method(input_rankings)
 print(kemeny_aggregation)
 
 
