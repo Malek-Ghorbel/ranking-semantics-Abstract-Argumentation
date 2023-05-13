@@ -12,7 +12,7 @@ from scoring_aggregation.borda_count_aggregation import borda_count_aggregation
 from scoring_aggregation.consensus import closest_ranking
 from scoring_aggregation.plurality_aggregation import plurality_aggregation
 from scoring_aggregation.top_k_aggregation import topk_aggregation
-from scoring_aggregation.veto_aggregation import  median_ranking , minimax_method
+from scoring_aggregation.veto_aggregation import  veto_aggregation
 from tuple_based import tuple_based
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -235,8 +235,6 @@ aggregation_listbox.insert(tkinter.END, "1-borda count")
 aggregation_listbox.insert(tkinter.END, "2-plurality")
 aggregation_listbox.insert(tkinter.END, "3-top k")
 aggregation_listbox.insert(tkinter.END, "4-veto")
-aggregation_listbox.insert(tkinter.END, "5-biased scoring")
-aggregation_listbox.insert(tkinter.END, "6-Kemeny")
 def aggregate(event):
     message = aggregation_listbox.get(aggregation_listbox.curselection() )
     index = message[0]
@@ -250,11 +248,9 @@ def aggregate(event):
         k = int(k_entry.get())
         rank= topk_aggregation(ranking_list=rankings , k=k)
     elif (index == '4') :
-        rank= minimax_method(rankings)
+        rank= veto_aggregation(rankings)
     elif (index == '5') :
         rank= biased_scoring_aggregation(rankings)
-    elif (index == '6') :
-        message += str("kemeny_aggregation(rankings)")
     outputs_area.config(state='normal')
     message += str(rank)
     i_consensus = closest_ranking(rank, rankings)
