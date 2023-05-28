@@ -1,4 +1,5 @@
 import tkinter
+import time 
 from tkinter import filedialog
 import tkinter.scrolledtext
 import networkx as nx
@@ -9,10 +10,10 @@ from discussion_based import discussion_based
 from matt_and_toni import mt_ranking
 from scoring_aggregation.biased_scoring_aggregation import biased_scoring_aggregation
 from scoring_aggregation.borda_count_aggregation import borda_count_aggregation
-from scoring_aggregation.consensus import closest_ranking
+from scoring_aggregation.consensus import closest_ranking, kendall_closest_ranking
 from scoring_aggregation.plurality_aggregation import plurality_aggregation
 from scoring_aggregation.top_k_aggregation import topk_aggregation
-from scoring_aggregation.veto_aggregation import  veto_aggregation
+from scoring_aggregation.veto_aggregation import  minimax_method, veto_aggregation , aggregate_rankings
 from tuple_based import tuple_based
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -156,51 +157,57 @@ semantics_listbox.insert(tkinter.END, "4-alpha burden")
 semantics_listbox.insert(tkinter.END, "5-tuple")
 semantics_listbox.insert(tkinter.END, "6-Matt & Toni")
 def on_select(event):
-    message = semantics_listbox.get(semantics_listbox.curselection() )
-    semantic = message[0]
-    message = message[2:] + ' based : ' 
-    if semantic == '1':
-        rank= categoriser_based_ranking(G)
-        if (rank):
-            rankings.append(rank)
-            semantics.append(semantic)
-        message += str(rank)
-    if semantic == '2':
-        rank = discussion_based(G ,1)
-        if (rank):
-            rankings.append(rank)
-            semantics.append(semantic)
-        message += str(rank)
-    elif semantic == '3':
-        rank = burden_based(G ,10)
-        if (rank):
-            rankings.append(rank)
-            semantics.append(semantic)
-        message += str(rank)
-    elif semantic == '4':
-        alpha = int(number_entry.get())
-        rank = alpha_burden_based(G ,alpha)
-        if (rank):
-            rankings.append(rank)
-            semantics.append(semantic)
-        message += str(rank)
-    elif semantic == '5':
-        rank = tuple_based(G)
-        if (isinstance(rank, list) and (rank)):
-            rankings.append(rank)
-            semantics.append(semantic)
-        message += str(rank)
-    elif semantic == '6':
-        rank = mt_ranking(G)
-        message = message.replace('based ','')
-        if (rank):
-            rankings.append(rank)
-            semantics.append(semantic)
-        message += str(rank)
-    output_area.config(state='normal')
-    output_area.insert('end', message+'\n')
-    output_area.yview('end')
-    output_area.config(state='disabled')
+    try : 
+        message = semantics_listbox.get(semantics_listbox.curselection() )
+        semantic = message[0]
+        message = message[2:] + ' based : ' 
+        start_time = time.time()
+        if semantic == '1':
+            rank= categoriser_based_ranking(G)
+            if (rank):
+                rankings.append(rank)
+                semantics.append("Categoriser")
+            message += str(rank)
+        if semantic == '2':
+            rank = discussion_based(G ,1)
+            if (rank):
+                rankings.append(rank)
+                semantics.append("Discussion")
+            message += str(rank)
+        elif semantic == '3':
+            rank = burden_based(G ,10)
+            if (rank):
+                rankings.append(rank)
+                semantics.append("Burden")
+            message += str(rank)
+        elif semantic == '4':
+            alpha = int(number_entry.get())
+            rank = alpha_burden_based(G ,alpha)
+            if (rank):
+                rankings.append(rank)
+                semantics.append("alpha-Burden")
+            message += str(rank)
+        elif semantic == '5':
+            rank = tuple_based(G)
+            if (isinstance(rank, list) and (rank)):
+                rankings.append(rank)
+                semantics.append("Tuple")
+            message += str(rank)
+        elif semantic == '6':
+            rank = mt_ranking(G)
+            message = message.replace('based ','')
+            if (rank):
+                rankings.append(rank)
+                semantics.append("M&T")
+            message += str(rank)
+        end_time = time.time()
+        print(end_time - start_time)
+        output_area.config(state='normal')
+        output_area.insert('end', message+'\n')
+        output_area.yview('end')
+        output_area.config(state='disabled')
+    except Exception as e :
+        print()
 
 semantics_listbox.bind("<<ListboxSelect>>", on_select)
 
@@ -235,7 +242,24 @@ aggregation_listbox.insert(tkinter.END, "1-borda count")
 aggregation_listbox.insert(tkinter.END, "2-plurality")
 aggregation_listbox.insert(tkinter.END, "3-top k")
 aggregation_listbox.insert(tkinter.END, "4-veto")
+def print_aggregation_rank(distances) :
+    # Combine the lists and sort based on time
+    combined_list = sorted(zip(semantics, distances), key=lambda x: x[1])
+    # Determine the ranks
+    ranks = {}
+    rank = 1
+    prev_time = None
+    for i, (name, time) in enumerate(combined_list):
+        if time != prev_time:
+            rank = i + 1
+        ranks[name] = rank
+        prev_time = time
+    # Print the results
+    for name, rank in ranks.items():
+        print(f"{name} -> {rank}")
+
 def aggregate(event):
+    
     message = aggregation_listbox.get(aggregation_listbox.curselection() )
     index = message[0]
     message = message[2:] + ' : '
@@ -248,28 +272,24 @@ def aggregate(event):
         k = int(k_entry.get())
         rank= topk_aggregation(ranking_list=rankings , k=k)
     elif (index == '4') :
-        rank= veto_aggregation(rankings)
+        rank= minimax_method(rankings)
     elif (index == '5') :
         rank= biased_scoring_aggregation(rankings)
     outputs_area.config(state='normal')
     message += str(rank)
-    i_consensus = closest_ranking(rank, rankings)
-    consensus = semantics[i_consensus]
-    if (consensus == '1'):
-        consensus = "categorizer"
-    elif (consensus == '2'):
-        consensus = "discussion"
-    elif (consensus == '3') :
-        consensus= "burden"
-    elif (consensus == '4') :
-        consensus= "alpha_burden"
-    elif (consensus == '5') :
-        consensus= "tuple"
-    elif (consensus == '6') :
-        consensus = "M&T"
+    distances = kendall_closest_ranking(rank, rankings)
+    consensus = semantics[distances.index(min(distances))]
+    print("simple distance")
+    print_aggregation_rank(distances)
+
+    kendall_distances = kendall_closest_ranking(rank, rankings)
+    print("Kendall distance")
+    print_aggregation_rank(kendall_distances)
+
     outputs_area.insert('end', message+ ' --> ' + consensus+'\n')
     outputs_area.yview('end')
     outputs_area.config(state='disabled')
+    
 aggregation_listbox.bind("<<ListboxSelect>>", aggregate)
 
 #aggregation output
