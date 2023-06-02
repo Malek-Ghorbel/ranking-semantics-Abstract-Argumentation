@@ -8,7 +8,8 @@ def veto_aggregation(ranking_list):
             if ranking_list[ranking_idx][item_idx] == n_items+1:
                 scores[item_idx] += 1
                 break
-
+    
+    print(scores)
     sorted_items = [x+1 for _, x in sorted(zip(scores, range(n_items)), reverse=False)]
 
     return sorted_items
